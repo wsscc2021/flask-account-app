@@ -39,15 +39,18 @@ class Account(Resource):
         """Delete account"""
         try:
             user = User.query.filter_by(username=username).first()
-            if not user:
+            if user:
+                db.session.delete(user)
+                db.session.commit()
+                return {
+                    "message": f"Deleted {username}"
+                }, 200
+            else:
                 return {
                     "message": f"{username} does not exists"
                 }, 404
-            db.session.delete(user)
-            return {
-                "message": f"Deleted {username}"
-            }, 200
         except Exception as error:
+            db.session.rollback()
             return {
                 "message": "Server Internal Error"
             }, 500
