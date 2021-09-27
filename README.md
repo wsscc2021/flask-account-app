@@ -36,7 +36,7 @@ Flask-RestX 를 사용하여 직관적으로 REST API를 개발할 수 있습니
 
 ## Flask SQLAlchemy
 프로그래밍 언어의 Object와 같은 방식으로 SQL문을 Handling할 수 있도록 ORM을 사용합니다. 그리고 ORM 기능을 수행하는 SQLAlchemy를 사용합니다.
-특히 Flask-SQLAlchemy를 사용하면 일반 SQLAlchemy보다 engine을 생성, session 관리를 간단하게 할 수 있습니다. https://flask-sqlalchemy.palletsprojects.com/en/2.x/
+특히 Flask-SQLAlchemy를 사용하면 일반 SQLAlchemy보다 engine 생성, session 관리를 간단하게 할 수 있습니다. https://flask-sqlalchemy.palletsprojects.com/en/2.x/
 
 ## JWT (Json Web Token)
 사용자를 식별하는 용도로 사용되는 Session, Cookie, Token방식 중 Token방식을 사용하고, 사용자 인증에 필요한 정보를 토큰 자체에 포함하고 있는 JWT를 사용합니다.
