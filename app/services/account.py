@@ -20,7 +20,7 @@ class Account(Resource):
                 }, 400
             user = User(username=username, password=bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt()).decode('utf-8'))
             db.session.add(user)
-            db.session.commit()                
+            db.session.commit()
             return {
                 "message": f"Created {username}"
             }, 201
@@ -29,11 +29,22 @@ class Account(Resource):
             return {
                 "message": "Duplicate username"
             }, 403
-    def delete(self):
+    def delete(self,username):
         """Delete account"""
-        return {
-            "message": "Deleted account"
-        }
+        try:
+            user = User.query.filter_by(username=username).first()
+            if not user:
+                return {
+                    "message": f"{username} does not exists"
+                }, 404
+            db.session.delete(user)
+            return {
+                "message": f"Deleted {username}"
+            }, 200
+        except Exception as error:
+            return {
+                "message": "Server Internal Error"
+            }, 500
     def put(self):
         """Updated account"""
         return {
