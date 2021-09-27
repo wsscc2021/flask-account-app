@@ -14,16 +14,22 @@ class Account(Resource):
         """Create account"""
         try:
             password = request.json.get('password')
-            if not password:
+            email = request.json.get('email')
+            if password and email:
+                user = User(username=username, password=bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt()).decode('utf-8'))
+                db.session.add(user)
+                db.session.commit()
+                return {
+                    "message": f"Created {username}"
+                }, 201
+            elif not password:
                 return {
                     "message": "Required password"
                 }, 400
-            user = User(username=username, password=bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt()).decode('utf-8'))
-            db.session.add(user)
-            db.session.commit()
-            return {
-                "message": f"Created {username}"
-            }, 201
+            elif not email:
+                return {
+                    "message": "Required email"
+                }, 400
         except IntegrityError as error:
             db.session.rollback()
             return {
