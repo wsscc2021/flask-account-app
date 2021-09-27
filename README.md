@@ -26,7 +26,7 @@ Micro Framework인 Flask는 Django처럼 어플리케이션 구조가 짜여져 
 
 ## Flask Blueprint
 Blueprint는 Large Application에서 Component를 모듈화하여 체계적으로 구조화하는 것을 도와주는 기능입니다.
-일반적으로 규모가 큰 어플리케이션에서 사용하여 구조화하는 데 사용하고, 규모가 작은 어플리케이션은 오히려 복잡성을 증가시킬 수 있습니다.
+일반적으로 규모가 큰 어플리케이션에서 구조화하는 데 사용하고, 규모가 작은 어플리케이션은 오히려 복잡성을 증가시킬 수 있습니다.
 하지만, 개인적으로는 규모가 작은 어플리케이션에서도 기능의 역할을 명확하게 구분지을 수 있어서 충분히 사용해도 좋을 것 같다는 생각이 듭니다. https://flask.palletsprojects.com/en/2.0.x/blueprints/
 
 ## Flask RESTx
