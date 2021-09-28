@@ -77,8 +77,25 @@ class Account(Resource):
             return {
                 "message": "Server Internal Error"
             }, 500
-    def delete(self):
-        """Deleted account"""
-        return {
-            "message": "Deleted account"
-        }
+    def get(self,username):
+        """Get account"""
+        try:
+            user = User.query.filter_by(username=username).first()
+            if user:
+                user_attributes = {
+                    column.name: str(getattr(user, column.name))
+                        for column in user.__table__.columns
+                        if column.name not in ['password','id']
+                }
+                return {
+                    "message": "Getting account",
+                    "user": user_attributes
+                }, 200
+            else:
+                return {
+                    "message": f"{username} does not exists"
+                }, 404
+        except Exception as error:
+            return {
+                "message": "Deleted account"
+            }, 500
