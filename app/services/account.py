@@ -16,7 +16,10 @@ class Account(Resource):
             password = request.json.get('password')
             email = request.json.get('email')
             if password and email:
-                user = User(username=username, password=bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt()).decode('utf-8'))
+                user = User(
+                    username=username,
+                    password=bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt()).decode('utf-8'),
+                    email=email)
                 db.session.add(user)
                 db.session.commit()
                 return {
@@ -54,11 +57,26 @@ class Account(Resource):
             return {
                 "message": "Server Internal Error"
             }, 500
-    def put(self):
+    def put(self,username):
         """Updated account"""
-        return {
-            "message": "Updated account"
-        }
+        try:
+            email = request.json.get('email')
+            user = User.query.filter_by(username=username).first()
+            if user:
+                user.email = email if email else user.email
+                db.session.commit()
+                return {
+                    "message": f"Updated {username}"
+                }, 200
+            else:
+                return {
+                    "message": f"{username} does not exists"
+                }, 404
+        except Exception as error:
+            db.session.rollback()
+            return {
+                "message": "Server Internal Error"
+            }, 500
     def delete(self):
         """Deleted account"""
         return {
