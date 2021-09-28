@@ -1,6 +1,5 @@
 #Application modules
 from app import create_app
-from config import DevelopmentConfig, ProductionConfig
 
 app = create_app()
 

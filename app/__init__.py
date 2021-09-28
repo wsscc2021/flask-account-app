@@ -1,12 +1,10 @@
 # Built-in modules
 from flask import Flask
-# Application modules
-from config import DevelopmentConfig, ProductionConfig
 
 def create_app() -> Flask:
     app = Flask(__name__)
     # Configuration
-    app.config.from_object(DevelopmentConfig())
+    app.config.from_envvar('APP_CONFIG_FILE')
     # Blueprint
     from app.services import auth
     from app.services import account
