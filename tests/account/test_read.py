@@ -1,3 +1,8 @@
+"""
+    TestCase of /account/{username} GET API
+    account 정보를 읽어오는 API를 테스트합니다.
+"""
+# standard library
 import json
 
 def create_account(client, path, body):

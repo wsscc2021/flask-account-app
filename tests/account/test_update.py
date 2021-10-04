@@ -1,5 +1,8 @@
 """
+    TestCase of /account/{username} PUT API
+    account 정보를 수정하는 API를 테스트합니다.
 """
+# standard library
 import json
 
 def create_account(client, path, body):

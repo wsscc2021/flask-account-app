@@ -1,6 +1,8 @@
 """
-
+    TestCase of /auth POST API
+    사용자 인증을 통해 JWT 토큰을 발급받는 API를 테스트 합니다.
 """
+# standard library
 import json
 
 def create_account(client, path, body):

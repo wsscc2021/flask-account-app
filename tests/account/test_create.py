@@ -1,7 +1,7 @@
 """
-    account CRUD(생성/수정/삭제/업데이트) 중 Create 작업이 정상적으로 수행되는 지 확인합니다.
+    TestCase of /account/{username} DELETE API
+    account 를 생성하는 API를 테스트합니다.
 """
-
 # standard library
 import json
 
