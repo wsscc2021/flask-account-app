@@ -12,20 +12,25 @@ Micro Framework인 Flask는 Django처럼 어플리케이션 구조가 짜여져 
 대부분 체계적인 구조화가 필요한 경우 다른 개발자 혹은 미래의 자신이 원하는 요소를 쉽게 찾을 수 있도록 직관적이고 보편적인 방법으로 설계해야합니다.
 저는 아래와 같은 방식으로 구조화하였습니다.
 ```
+.
 ├── app
-│   ├── __init__.py     # create_app() 함수를 포함하는 파일입니다. Flask Instance를 생성합니다.
-│   ├── models          # ORM Object들을 포함하는 디렉터리입니다.
-│   │   └── __init__.py
-│   └── services        # 실제 Business logic을 수행하는 파일들을 포함하는 디렉터리입니다.
+│   ├── __init__.py      # create_app() 함수를 포함하는 파일입니다. Flask Instance를 생성합니다.
+│   ├── models           # ORM Object들을 포함하는 디렉터리입니다.
+│   |   ├── __init__.py
+|   |   ....
+│   └── services         # 실제 Business logic을 수행하는 파일들을 포함하는 디렉터리입니다.
 │       ├── __init__.py
-│       ├── account.py
-│       └── auth.py
+|       ....
 ├── config               # DEBUG_MODE, DB주소 등을 설정하는 파일을 포함하는 디렉터리입니다. (배포환경별 설정파일을 분리해두었습니다.)
 │   ├── __init__.py
 │   ├── development.py
-│   ├── production.py
-│   └── test.py
-└── run.py  # 어플리케이션을 실행하는 역할만을 수행하는 파일입니다.
+│   ├── local.py
+│   └── production.py
+├── tests                # 테스트 케이스를 포함한 디렉터리입니다. (pytest library를 활용하였습니다.)
+│   ├── __init__.py
+|   ├── conftest.py      # 모든 테스트 케이스에서 공통으로 쓰는 로직이나 데이터를 정의하는 파일입니다.
+|   ....
+└── run.py               # 어플리케이션을 실행하는 역할만을 수행하는 파일입니다.
 ```
 
 ## Flask Blueprint
