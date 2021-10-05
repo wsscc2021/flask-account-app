@@ -24,6 +24,8 @@ def json_validate(schema):
     def decorator(func):
         def wrapper(*args, **kwargs):
             try:
+                if not request.is_json:
+                    raise jsonschema.ValidationError("Must be json format")
                 jsonschema.validate(request.json, schema)
                 return func(*args, **kwargs)
             except jsonschema.ValidationError as error:
