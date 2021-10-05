@@ -5,20 +5,26 @@ import jsonschema
 # Thrid-party library
 from flask import Blueprint, request
 from flask_restx import Api, Resource, fields
+from flask_mail import Message
 from sqlalchemy.exc import IntegrityError
 import bcrypt
+import random
 # Application modules
 from app import db
+from app import redis_client
+from app import mail
 from app.models.account import Account
 
 # Blueprint
 bp = Blueprint('account', __name__)
 api = Api(bp)
 
-# JsonSchema
-schema_file = os.path.join(bp.root_path, "schemas", "account.json")
-with open(schema_file) as f:
-    base_schema = json.load(f)
+# JsonSchema load from jsonfile
+def get_schema(filename):
+    schema_file = os.path.join(bp.root_path, "schemas", filename)
+    with open(schema_file) as f:
+        schema = json.load(f)
+    return schema
 
 # JsonSchema Decorator
 def json_validate(schema):
@@ -40,12 +46,16 @@ def json_validate(schema):
         return wrapper
     return decorator
 
+# JsonSchema
+schema = dict()
+schema["account"] = get_schema("account.json")
+schema["account_activation_flag"] = get_schema("account_activation_flag.json")
 
 # Business Logic
 @api.route('/<username>')
 class AccountApi(Resource):
 
-    @json_validate(base_schema['post'])
+    @json_validate(schema["account"]['post'])
     def post(self,username):
         """Create account"""
         try:
@@ -90,7 +100,7 @@ class AccountApi(Resource):
                 "message": "Server Internal Error"
             }, 500
 
-    @json_validate(base_schema['put'])
+    @json_validate(schema["account"]['put'])
     def put(self,username):
         """Updated account"""
         try:
@@ -131,6 +141,72 @@ class AccountApi(Resource):
                     "message": f"{username} does not exists"
                 }, 404
         except Exception as error:
+            return {
+                "message": "Internal Server Error"
+            }, 500
+
+
+
+@api.route('/<username>/activation_code')
+class AccountActivationCode(Resource):
+
+    def post(self, username):
+        try:
+            account = Account.query.filter_by(username=username).first()
+            if not account:
+                return {
+                    "message": f"{username} does not exists"
+                }, 404
+
+            expire_time = 60 * 10 # 10분
+            activation_code_length = 6 # 6자리
+            random_int = int(random.random() * (10**activation_code_length))
+            activation_code = str(random_int).zfill(activation_code_length) # zfill
+            redis_client.set(username, activation_code, ex=expire_time) # redis에 저장
+
+            title = f"{username}님의 인증 코드"
+            body = f"사용자 인증번호는 {activation_code} 입니다."
+            sender = "worldskills.developer@gmail.com"
+            recipients = [account.email]
+            message = Message(title, sender=sender, recipients=recipients, body=body)
+            mail.send(message)
+
+            return {
+                "message": f"Created {username}'s activation code"
+            }, 201
+        except Exception as error:
+            return {
+                "message": "Internal Server Error"
+            }, 500
+
+
+
+@api.route('/<username>/activation_flag')
+class AccountActivationFlag(Resource):
+    
+    @json_validate(schema['account_activation_flag']['put'])
+    def put(self, username):
+        try:
+            activation_code = request.json.get('activation_code')
+            verified_activation_code = redis_client.get(username)
+            if not activation_code == verified_activation_code:
+                return {
+                    "message": "Invalid Activation code"
+                }, 403
+
+            account = Account.query.filter_by(username=username).first()
+            if not account:
+                return {
+                    "message": f"{username} does not exists"
+                }, 404
+
+            account.activation_flag = True
+            db.session.commit()
+            return {
+                "message": f"{username} is activated now"
+            }
+        except Exception as error:
+            db.session.rollback()
             return {
                 "message": "Internal Server Error"
             }, 500

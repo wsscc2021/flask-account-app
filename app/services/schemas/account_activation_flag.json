@@ -1,0 +1,10 @@
+{
+    "put": {
+        "type": "object",
+        "properties": {
+            "activation_flag": {
+                "type": "string"
+            }
+        }
+    }
+}
