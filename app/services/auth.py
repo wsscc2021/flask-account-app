@@ -1,23 +1,53 @@
+# Standard library
+import datetime
+import jsonschema
+import json
+import os
+# Thrid-party library
 from flask import Blueprint, request
 from flask_restx import Api, Resource
-import bcrypt, jwt, datetime
+import bcrypt
+import jwt
+# Application module
 from app.models import db, User
 
+# Blueprint
 bp = Blueprint('auth', __name__)
 api = Api(bp)
 
+# JsonSchema
+schema_file = os.path.join(bp.root_path, "schemas", "auth.json")
+with open(schema_file) as f:
+    base_schema = json.load(f)
+
+# JsonSchema Decorator
+def json_validate(schema):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            try:
+                jsonschema.validate(request.json, schema)
+                return func(*args, **kwargs)
+            except jsonschema.ValidationError as error:
+                return {
+                    "message": error.message
+                }, 400
+            except jsonschema.SchemaError as error:
+                return {
+                    "message": "Internal Server error"
+                }, 500
+        return wrapper
+    return decorator
+
+# Business Logic
 @api.route('')
 class AuthToken(Resource):
+    
+    @json_validate(base_schema['post'])
     def post(self):
         """Authentication for generate token to user"""
         try:
-            # Type check
             username = request.json.get('username')
             password = request.json.get('password')
-            if (username is None) or (password is None):
-                return {
-                    "message": "Required username and password"
-                }, 400
             # Query
             user = User.query.filter_by(username=username).first()
             if user is None:
