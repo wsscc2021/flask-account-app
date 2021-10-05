@@ -1,5 +1,11 @@
-# Built-in modules
+# Third-party library
 from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+# from flask_redis import FlaskRedis
+
+# Extensions
+db = SQLAlchemy()
+# redis_client = FlaskRedis()
 
 def create_app() -> Flask:
     app = Flask(__name__)
@@ -10,7 +16,7 @@ def create_app() -> Flask:
     from app.services import account
     app.register_blueprint(auth.bp, url_prefix='/auth')
     app.register_blueprint(account.bp, url_prefix='/account')
-    # SQLAlchemy
-    from app.models import db
+    # Extensions init
     db.init_app(app)
+    # redis_client.init_app(app)
     return app

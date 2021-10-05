@@ -8,7 +8,8 @@ from flask_restx import Api, Resource, fields
 from sqlalchemy.exc import IntegrityError
 import bcrypt
 # Application modules
-from app.models import db, User
+from app import db
+from app.models.account import Account
 
 # Blueprint
 bp = Blueprint('account', __name__)
@@ -42,7 +43,7 @@ def json_validate(schema):
 
 # Business Logic
 @api.route('/<username>')
-class Account(Resource):
+class AccountApi(Resource):
 
     @json_validate(base_schema['post'])
     def post(self,username):
@@ -50,11 +51,11 @@ class Account(Resource):
         try:
             password = request.json.get('password')
             email = request.json.get('email')
-            user = User(
+            account = Account(
                 username=username,
                 password=bcrypt.hashpw(password.encode('UTF-8'), bcrypt.gensalt()).decode('utf-8'),
                 email=email)
-            db.session.add(user)
+            db.session.add(account)
             db.session.commit()
             return {
                 "message": f"Created {username}"
@@ -72,9 +73,9 @@ class Account(Resource):
     def delete(self,username):
         """Delete account"""
         try:
-            user = User.query.filter_by(username=username).first()
-            if user:
-                db.session.delete(user)
+            account = Account.query.filter_by(username=username).first()
+            if account:
+                db.session.delete(account)
                 db.session.commit()
                 return {
                     "message": f"Deleted {username}"
@@ -94,9 +95,9 @@ class Account(Resource):
         """Updated account"""
         try:
             email = request.json.get('email')
-            user = User.query.filter_by(username=username).first()
-            if user:
-                user.email = email if email else user.email
+            account = Account.query.filter_by(username=username).first()
+            if account:
+                account.email = email if email else account.email
                 db.session.commit()
                 return {
                     "message": f"Updated {username}"
@@ -114,16 +115,16 @@ class Account(Resource):
     def get(self,username):
         """Get account"""
         try:
-            user = User.query.filter_by(username=username).first()
-            if user:
-                user_attributes = {
-                    column.name: str(getattr(user, column.name))
-                        for column in user.__table__.columns
+            account = Account.query.filter_by(username=username).first()
+            if account:
+                account_attributes = {
+                    column.name: str(getattr(account, column.name))
+                        for column in account.__table__.columns
                         if column.name not in ['password','id']
                 }
                 return {
                     "message": "Getting account",
-                    "user": user_attributes
+                    "account": account_attributes
                 }, 200
             else:
                 return {

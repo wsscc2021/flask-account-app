@@ -11,7 +11,7 @@ import tempfile
 import pytest
 # Application module
 from app import create_app
-from app.models import db
+from app import db
 
 @pytest.fixture
 def client():

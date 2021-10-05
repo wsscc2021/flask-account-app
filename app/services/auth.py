@@ -9,7 +9,8 @@ from flask_restx import Api, Resource
 import bcrypt
 import jwt
 # Application module
-from app.models import db, User
+from app import db
+from app.models.account import Account
 
 # Blueprint
 bp = Blueprint('auth', __name__)
@@ -51,12 +52,12 @@ class AuthToken(Resource):
             username = request.json.get('username')
             password = request.json.get('password')
             # Query
-            user = User.query.filter_by(username=username).first()
-            if user is None:
+            account = Account.query.filter_by(username=username).first()
+            if account is None:
                 return {
                     "message": "Invalid username"
                 }, 403
-            elif not bcrypt.checkpw(password.encode('utf-8'), user.password.encode('utf-8')):
+            elif not bcrypt.checkpw(password.encode('utf-8'), account.password.encode('utf-8')):
                 return {
                     "message": "Invalid password"
                 }, 403
