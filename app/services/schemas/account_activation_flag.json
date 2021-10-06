@@ -2,7 +2,7 @@
     "put": {
         "type": "object",
         "properties": {
-            "activation_flag": {
+            "verification_code": {
                 "type": "string"
             }
         }

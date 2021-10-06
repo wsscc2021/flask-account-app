@@ -147,8 +147,8 @@ class AccountApi(Resource):
 
 
 
-@api.route('/<username>/activation_code')
-class AccountActivationCode(Resource):
+@api.route('/<username>/verification_code')
+class AccountVerificationCode(Resource):
 
     def post(self, username):
         try:
@@ -159,20 +159,20 @@ class AccountActivationCode(Resource):
                 }, 404
 
             expire_time = 60 * 10 # 10분
-            activation_code_length = 6 # 6자리
-            random_int = int(random.random() * (10**activation_code_length))
-            activation_code = str(random_int).zfill(activation_code_length) # zfill
-            redis_client.set(username, activation_code, ex=expire_time) # redis에 저장
+            verification_code_length = 6 # 6자리
+            random_int = int(random.random() * (10**verification_code_length))
+            verification_code = str(random_int).zfill(verification_code_length) # zfill
+            redis_client.set(username, verification_code, ex=expire_time) # redis에 저장
 
             title = f"{username}님의 인증 코드"
-            body = f"사용자 인증번호는 {activation_code} 입니다."
+            body = f"인증 코드는 {verification_code} 입니다."
             sender = "worldskills.developer@gmail.com"
             recipients = [account.email]
             message = Message(title, sender=sender, recipients=recipients, body=body)
             mail.send(message)
 
             return {
-                "message": f"Created {username}'s activation code"
+                "message": f"Created {username}'s veirfication code"
             }, 201
         except Exception as error:
             return {
@@ -187,11 +187,11 @@ class AccountActivationFlag(Resource):
     @json_validate(schema['account_activation_flag']['put'])
     def put(self, username):
         try:
-            activation_code = request.json.get('activation_code')
-            verified_activation_code = redis_client.get(username)
-            if not activation_code == verified_activation_code:
+            request_verification_code = request.json.get('verification_code')
+            verification_code = redis_client.get(username)
+            if request_verification_code != verification_code:
                 return {
-                    "message": "Invalid Activation code"
+                    "message": "Invalid Verification code"
                 }, 403
 
             account = Account.query.filter_by(username=username).first()
