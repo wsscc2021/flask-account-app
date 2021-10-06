@@ -40,6 +40,7 @@ def json_validate(schema):
                     "message": error.message
                 }, 400
             except jsonschema.SchemaError as error:
+                print(error)
                 return {
                     "message": "Internal Server error"
                 }, 500
@@ -50,6 +51,7 @@ def json_validate(schema):
 schema = dict()
 schema["account"] = get_schema("account.json")
 schema["account_activation_flag"] = get_schema("account_activation_flag.json")
+schema["account_password"] = get_schema("account_password.json")
 
 # Business Logic
 @api.route('/<username>')
@@ -207,6 +209,57 @@ class AccountActivationFlag(Resource):
             }
         except Exception as error:
             db.session.rollback()
+            return {
+                "message": "Internal Server Error"
+            }, 500
+
+
+
+@api.route('/<username>/password')
+class AccountPassword(Resource):
+
+    @json_validate(schema['account_password']['put'])
+    def put(self, username):
+        try:
+            print("password")
+            request_verification_code = request.json.get('verification_code')
+            current_password = request.json.get('current_password')
+            new_password = request.json.get('new_password')
+
+            # 사용자 유무 확인
+            account = Account.query.filter_by(username=username).first()
+            if not account:
+                return {
+                    "message": f"{username} does not exists"
+                }, 404
+            
+            # 본인 인증
+            if request_verification_code: # email 인증코드 방식
+                verification_code = redis_client.get(username)
+                if request_verification_code != verification_code:
+                    return {
+                        "message": "Invalid Verification code"
+                    }, 403
+            
+            elif current_password: # 현재 패스워드 확인 방식
+                if not bcrypt.checkpw(current_password.encode('utf-8'), account.password.encode('utf-8')):
+                    return {
+                        "message": "Invalid Current password"
+                    }, 403
+            
+            else: # 인증 방식을 선택하지 않았을 때
+                return {
+                    "message": "Required current_password or verification_code"
+                }, 400
+            
+            # 본인 인증 통과 후 비밀번호 변경
+            account.password = bcrypt.hashpw(new_password.encode('UTF-8'), bcrypt.gensalt()).decode('utf-8')
+            db.session.commit()
+            return {
+                "message": f"Update {username}'s password"
+            }, 200
+        except Exception as error:
+            print(error)
             return {
                 "message": "Internal Server Error"
             }, 500
